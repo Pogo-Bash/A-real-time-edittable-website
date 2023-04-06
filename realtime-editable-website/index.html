@@ -2,44 +2,38 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Real-time code editor</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/mode/javascript/javascript.min.js"></script>
+    <title>Real-time text editor</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-      .CodeMirror {
-        height: 100vh;
+      .text-input {
+        width: 100%;
+        height: 100%;
         font-size: 16px;
       }
     </style>
   </head>
   <body>
-    <textarea id="code"></textarea>
+    <div id="userCount"></div>
+    <textarea id="textInput" class="text-input"></textarea>
     <script>
       const socket = io();
 
-      const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        lineNumbers: true,
-        mode: "javascript",
-        theme: "material",
-        viewportMargin: Infinity,
+      const userCount = document.getElementById("userCount");
+      const textInput = document.getElementById("textInput");
+
+      // update the user count on the page
+      socket.on("userCount", function(count) {
+        userCount.innerHTML = "Number of users: " + count;
       });
 
-      editor.on("change", function() {
-        socket.emit("code", editor.getValue()); // emit the new code to the server
+      // send the text to the server on change
+      textInput.addEventListener("input", function() {
+        socket.emit("text", textInput.value);
       });
 
-      socket.on("code", function(code) {
-        editor.setValue(code); // update the editor with the new code
-      });
-
-      // send the current code to the server on connection
-      socket.on("connect", function() {
-        socket.emit("code", editor.getValue());
+      // update the text area with the new text
+      socket.on("text", function(text) {
+        textInput.value = text;
       });
     </script>
   </body>
