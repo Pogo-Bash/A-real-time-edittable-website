@@ -5,15 +5,7 @@ To deploy this project
 
     Install Node.js: You can download Node.js from the official website - https://nodejs.org/en/. Follow the installation instructions based on your operating system.
 
-    Install dependencies: Once Node.js is installed, open a terminal or command prompt in the project directory and run the following command to install the necessary dependencies:
-
-npm install
-
-This will install the required modules listed in the package.json file.
-
-    Start the server: After installing the dependencies, start the server by running the following command in the terminal:
-
-node server.js
+if you are deploying node app just download the files in the realtime-editable-website folder and download whatever node says you dont have you need like socket.io only I think.
 
 This will start the server and print a message indicating that it's running on port 3000.
 
