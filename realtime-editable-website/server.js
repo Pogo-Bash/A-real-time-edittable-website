@@ -3,8 +3,13 @@ const fs = require("fs");
 const socketio = require("socket.io");
 
 const server = http.createServer(function (req, res) {
-  res.writeHead(200, { "Content-Type": "text/html" });
-  fs.createReadStream("index.html").pipe(res);
+  if (req.url === "/styles.css") {
+    res.writeHead(200, { "Content-Type": "text/css" });
+    fs.createReadStream("styles.css").pipe(res);
+  } else {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    fs.createReadStream("index.html").pipe(res);
+  }
 });
 
 const io = socketio(server);
