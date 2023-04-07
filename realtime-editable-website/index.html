@@ -10,31 +10,225 @@
         height: 100%;
         font-size: 16px;
       }
+
+      .user-list {
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 10px;
+        background-color: #eee;
+        display: none;
+      }
+      /* Styles for real-time text editor */
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  background-color: #eee;
+  padding: 10px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: normal;
+}
+
+.user-list {
+  background-color: #eee;
+  display: none;
+  padding: 10px;
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 200px;
+  z-index: 1;
+}
+
+.user-list h2 {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.user-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-list li {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+main {
+  display: flex;
+  flex: 1;
+}
+
+.text-editor {
+  flex: 1;
+  padding: 10px;
+}
+
+.text-input {
+  border: none;
+  font-size: 16px;
+  height: 100%;
+  outline: none;
+  width: 100%;
+}
+
+button {
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 10px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #0069d9;
+}
+
+#toggleButton {
+  margin-left: 10px;
+}
+
+#downloadButton {
+  margin-left: 10px;
+}
+
+@media screen and (max-width: 600px) {
+  .user-list {
+    width: 100%;
+  }
+}
+
+/* Styles for your original code */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.item {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.item p {
+  margin: 0;
+}
+
+.item p:last-child {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #888;
+}
+
+.item a {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  background-color: #007bff;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.item a:hover {
+  background-color: #0069d9;
+}
+
     </style>
   </head>
   <body>
-    <div id="userCount"></div>
+    <div class="user-list" id="userList"></div>
+    <button id="toggleButton">Toggle user list</button>
     <textarea id="textInput" class="text-input"></textarea>
+    <button id="downloadButton">Download as TXT</button>
     <script>
       const socket = io();
 
-      const userCount = document.getElementById("userCount");
+      const userList = document.getElementById("userList");
       const textInput = document.getElementById("textInput");
+      const toggleButton = document.getElementById("toggleButton");
+      const downloadButton = document.getElementById("downloadButton");
+      let username;
 
-      // update the user count on the page
-      socket.on("userCount", function(count) {
-        userCount.innerHTML = "Number of users: " + count;
-      });
+      function setUsername() {
+        username = prompt("Please enter your name");
+        socket.emit("setUsername", username);
+      }
 
-      // send the text to the server on change
-      textInput.addEventListener("input", function() {
+      function updateUsers(users) {
+        userList.innerHTML = "";
+        for (const user of users) {
+          const userElement = document.createElement("div");
+          userElement.innerText = user;
+          userList.appendChild(userElement);
+        }
+      }
+
+      function downloadAsTxt() {
+        const textToDownload = textInput.value;
+        const element = document.createElement("a");
+        const file = new Blob([textToDownload], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = "myText.txt";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      }
+
+      textInput.addEventListener("input", function () {
         socket.emit("text", textInput.value);
       });
 
-      // update the text area with the new text
-      socket.on("text", function(text) {
-        textInput.value = text;
+      socket.on("text", function (data) {
+        textInput.value = data.text;
+        updateUsers(data.users);
       });
+
+      socket.on("users", function (users) {
+        updateUsers(users);
+      });
+
+      toggleButton.addEventListener("click", function () {
+        if (userList.style.display === "none") {
+          userList.style.display = "block";
+        } else {
+          userList.style.display = "none";
+        }
+      });
+
+      downloadButton.addEventListener("click", function () {
+        downloadAsTxt();
+      });
+
+      setUsername();
     </script>
   </body>
 </html>
