@@ -2,14 +2,16 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="description" content="Your meta description here" />
     <title>Real-time text editor</title>
     <script src="/socket.io/socket.io.js"></script>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css" />
   </head>
   <body>
     <div class="user-list" id="userList"></div>
     <button id="toggleButton">Toggle user list</button>
     <textarea id="textInput" class="text-input"></textarea>
+    <div id="typingLabel"></div>
     <button id="downloadButton">Download as TXT</button>
     <script>
       const socket = io();
@@ -18,7 +20,9 @@
       const textInput = document.getElementById("textInput");
       const toggleButton = document.getElementById("toggleButton");
       const downloadButton = document.getElementById("downloadButton");
+      const typingLabel = document.getElementById("typingLabel");
       let username;
+      let timeoutId = null;
 
       function setUsername() {
         username = prompt("Please enter your name");
@@ -37,21 +41,39 @@
       function downloadAsTxt() {
         const textToDownload = textInput.value;
         const element = document.createElement("a");
-        const file = new Blob([textToDownload], {type: 'text/plain'});
+        const file = new Blob([textToDownload], { type: "text/plain" });
         element.href = URL.createObjectURL(file);
         element.download = "myText.txt";
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
       }
-
       textInput.addEventListener("input", function () {
         socket.emit("text", textInput.value);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(function () {
+          typingLabel.innerText = "";
+        }, 10000);
       });
 
       socket.on("text", function (data) {
         textInput.value = data.text;
         updateUsers(data.users);
+        const typingUsers = data.typingUsers;
+        if (typingUsers.length === 0) {
+          typingLabel.innerText = "";
+        } else if (typingUsers.length === 1) {
+          typingLabel.innerText = typingUsers[0] + " is typing...";
+        } else if (typingUsers.length === 2) {
+          typingLabel.innerText =
+            typingUsers[0] + " and " + typingUsers[1] + " are typing...";
+        } else {
+          const lastUser = typingUsers.pop();
+          typingLabel.innerText =
+            typingUsers.join(", ") + " and " + lastUser + " are typing...";
+        }
       });
 
       socket.on("users", function (users) {
