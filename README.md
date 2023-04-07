@@ -24,4 +24,4 @@ This will start the server and print a message indicating that it's running on p
     Start chatting: Once you've joined the chat room, you can start chatting by typing a message in the input field and pressing the "Send" button. Your message will be broadcast to all users in the chat room.
 ## Demo
 
-[[https://youtu.be/EPhZbQDAZs0](https://youtu.be/EPhZbQDAZs0)](https://youtu.be/EPhZbQDAZs0)
+https://youtu.be/1gGlewI3gtU
