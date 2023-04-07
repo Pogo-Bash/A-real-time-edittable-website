@@ -6,6 +6,9 @@ const server = http.createServer(function (req, res) {
   if (req.url === "/styles.css") {
     res.writeHead(200, { "Content-Type": "text/css" });
     fs.createReadStream("styles.css").pipe(res);
+  } else if (req.url === "/script.js") {
+    res.writeHead(200, { "Content-Type": "text/javascript" });
+    fs.createReadStream("script.js").pipe(res);
   } else {
     res.writeHead(200, { "Content-Type": "text/html" });
     fs.createReadStream("index.html").pipe(res);
@@ -24,7 +27,20 @@ io.on("connection", function (socket) {
   });
 
   socket.on("text", function (text) {
-    io.emit("text", { text: text, users: Object.values(users) });
+    let typingUsers = users[socket.id].typingUsers || [];
+    if (text.length > 0) {
+      if (!typingUsers.includes(users[socket.id])) {
+        typingUsers.push(users[socket.id]);
+      }
+    } else {
+      typingUsers = typingUsers.filter(user => user !== users[socket.id]);
+    }
+    users[socket.id].typingUsers = typingUsers;
+    io.emit("text", { 
+      text: text, 
+      users: Object.values(users),
+      typingUsers: typingUsers
+    });
   });
 
   socket.on("disconnect", function () {
